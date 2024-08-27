@@ -12,6 +12,7 @@ import (
 	"weatherapi/v2/external/models"
 )
 
+//go:generate mockgen -source=repo.go -destination=mock_repo.go -package=repository
 type RepositoryI interface {
 	SearchWeatherApi(ctx context.Context, request models.Request) (WeatherResponse, error)
 	GetGridInfo(ctx context.Context, request models.Request) (string, error)
