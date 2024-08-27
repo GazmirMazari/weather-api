@@ -1,5 +1,5 @@
 Env: "local"
-Port: "6080"
+Port: "808"
 AppName: "api-template"
 ClientConfig:
   Timeout: 15
@@ -7,6 +7,6 @@ ClientConfig:
   MaxIdleConsPerHost: 1
   MaxConsPerHost: 1
 ServiceConfigs:
-  - Name: "NationalWeatherService"
-    URL: "https://example.net/v5"
-    Timeout: 15
+  - Name: "WeatherService"
+    URL: "https://api.weather.gov/points"
+    Timeout: 60

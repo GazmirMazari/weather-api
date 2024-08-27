@@ -19,22 +19,24 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	//load the config
-	config, err := config.New(configPath)
+	cfg, err := config.New(configPath)
 	if err != nil {
 		log.Errorf("error loading config: %v", err)
 	}
 	//establish the facade
-	service, err := InitUpstreamConfigClient(config)
+	service, err := InitUpstreamConfigClient(cfg)
 	if err != nil {
 		log.Errorf("error initializing upstream client: %v", err)
 		os.Exit(1)
 	}
 
-	handler := routes.Handler{Service: &service}
+	handler := routes.Handler{Service: service}
 
 	router := handler.InitializeRoutes(ctx)
 
+	log.Printf("Server is listening on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, gziphandler.GzipHandler(router)))
+
 }
 
 func recoverPanics() {

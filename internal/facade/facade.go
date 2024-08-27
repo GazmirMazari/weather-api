@@ -15,8 +15,8 @@ type ServiceI interface {
 }
 
 type Service struct {
-	ApiClient repository.RepositoryI
-	Mapper    mapper.MapperI
+	RepositoryService repository.RepositoryI
+	Mapper            mapper.MapperI
 }
 
 func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (res models.WeatherPropertiesRes, err error) {
@@ -27,7 +27,7 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 	}
 
 	// Call the repository method to fetch weather data
-	response, err := r.ApiClient.SearchWeatherApi(ctx, request)
+	response, err := r.RepositoryService.SearchWeatherApi(ctx, request)
 	if err != nil {
 
 		log.Errorf("GetWeatherApiData error: %v", err)

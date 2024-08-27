@@ -3,46 +3,54 @@ package config
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	_ "gopkg.in/yaml.v2"
 	"gopkg.in/yaml.v3"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type Config struct {
-	AppName          string           `yaml:"AppName"`
-	Env              string           `yaml:"Env"`
-	Port             string           `yaml:"Port"`
-	ComponentConfigs ComponentConfigs `yaml:"ComponentConfigs"`
-	Services         ServiceConfigMap `yaml:"Services"`
-}
-
-type ComponentConfigs struct {
-	Client ClientConfig `yaml:"Client"`
+	Env            string          `yaml:"Env"`
+	Port           string          `yaml:"Port"`
+	AppName        string          `yaml:"AppName"`
+	ClientConfig   ClientConfig    `yaml:"ClientConfig"`
+	ServiceConfigs []ServiceConfig `yaml:"ServiceConfigs"` // Updated to match array in YAML
 }
 
 type ClientConfig struct {
-	Timeout        int    `yaml:"Timeout"`
-	BaseURL        string `yaml:"BaseURL"`
-	MaxConnections int    `yaml:"MaxConnections"`
-	RetryPolicy    string `yaml:"RetryPolicy"`
+	Timeout            int `yaml:"Timeout"`
+	IdleConnTimeout    int `yaml:"IdleConnTimeout"`
+	MaxIdleConsPerHost int `yaml:"MaxIdleConsPerHost"`
+	MaxConsPerHost     int `yaml:"MaxConsPerHost"`
 }
 
 type ServiceConfig struct {
-	URL                    string                 `yaml:"url"`
-	Timeout                int                    `yaml:"timeout"`
-	mergedComponentConfigs map[string]interface{} // Add this field
-	Client                 *http.Client           // Add this field
-	Name                   string                 // Add this field if needed
+	Name                   string                 `yaml:"Name"`
+	URL                    string                 `yaml:"URL"`
+	Timeout                int                    `yaml:"Timeout"`
+	mergedComponentConfigs map[string]interface{} // Not from YAML
+	Client                 *http.Client           // Not from YAML
+}
+
+// Method to initialize the HTTP client for each service
+func (s *ServiceConfig) InitHTTPClient() {
+	s.Client = &http.Client{
+		Timeout: time.Duration(s.Timeout) * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:    100,
+			IdleConnTimeout: 90 * time.Second,
+		},
+	}
 }
 
 type ServiceConfigMap map[string]*ServiceConfig
 
-// New initializes and returns a configuration object.
+// Load initializes and returns a configuration object.
 func New(configPath string) (*Config, error) {
 	log.Tracef("Loading config from: %s\n", configPath)
 
+	// Load the config from the YAML file
 	config, errs := newConfig(configPath)
 	if len(errs) > 0 || config == nil {
 		for _, err := range errs {
@@ -56,14 +64,22 @@ func New(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to load the config file")
 	}
 
+	// Initialize HTTP clients for all services
+	for name, service := range config.ServiceConfigs {
+		log.Tracef("Initializing service: %s", name)
+		service.InitHTTPClient()
+	}
+
 	log.Tracef("Environment: %s\n", strings.ToUpper(config.Env))
 	return config, nil
 }
 
 func (c *Config) GetService(name string) (*ServiceConfig, error) {
-	if service, ok := c.Services[name]; ok {
-		log.Tracef("Service %q found: %+v", name, service)
-		return service, nil
+	for _, service := range c.ServiceConfigs {
+		if service.Name == name {
+			log.Tracef("Service %q found: %+v", name, service)
+			return &service, nil
+		}
 	}
 	// return error if the service not found in config
 	return nil, fmt.Errorf("service %q not found", name)
