@@ -2,34 +2,44 @@ package main
 
 import (
 	"context"
+	"github.com/NYTimes/gziphandler"
 	log "github.com/sirupsen/logrus"
+	"net/http"
+	"os"
+	"weatherapi/v2/cmd/svr/config"
+	"weatherapi/v2/internal/routes"
 )
 
-var config = "config/config.yaml"
+const port = ":8080"
+const configPath = "config/config.yaml"
 
 func main() {
-	//possible point of crash, recover in case of panics, function will execute in the end.
 	defer recoverPanics()
 
-	//establish a context which can be propagated
 	ctx, cancel := context.WithCancel(context.Background())
-	////load the config here
-	appConfig := config.New(config)
+	defer cancel()
+	//load the config
+	config, err := config.New(configPath)
+	if err != nil {
+		log.Errorf("error loading config: %v", err)
+	}
+	//establish the facade
+	service, err := InitUpstreamConfigClient(config)
+	if err != nil {
+		log.Errorf("error initializing upstream client: %v", err)
+		os.Exit(1)
+	}
 
-	if service, err := initialize
+	handler := routes.Handler{Service: &service}
 
-	//
-	////establish a facade here
-	//
-	//handler := routes.Handler
+	router := handler.InitializeRoutes(ctx)
 
-	//init the server
-
+	log.Fatal(http.ListenAndServe(port, gziphandler.GzipHandler(router)))
 }
 
 func recoverPanics() {
 	if r := recover(); r != nil {
-		log.Errof("paniced and am quitting &v", r)
-		log.Errof("I should be alerting someone...")
+		log.Errorf("a panic has happened.: %v", r)
+		log.Errorf("I should be alerting someone...")
 	}
 }

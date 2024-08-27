@@ -1,15 +1,12 @@
-{
-  "Env": "local",
-  "Port": "8080",
-  "AppName": "weather-api",
-  "ComponentConfigs": {
-    "Client": {
-      "Timeout": 15,
-      "IdleConnTimeout": 15,
-      "MaxIdleConsPerHost": 50,
-      "MaxConsPerHost": 0,
-      "DisableCompression": 2,
-      "InsecureSkipVerify": 1
-    }
-  }
-}
+Env: "local"
+Port: "6080"
+AppName: "api-template"
+ClientConfig:
+  Timeout: 15
+  IdleConnTimeout: 30
+  MaxIdleConsPerHost: 1
+  MaxConsPerHost: 1
+ServiceConfigs:
+  - Name: "NationalWeatherService"
+    URL: "https://example.net/v5"
+    Timeout: 15

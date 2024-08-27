@@ -1,43 +1,51 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
+	"weatherapi/v2/external/models"
 	"weatherapi/v2/internal/facade"
-	"weatherapi/v2/internal/models"
 )
 
 type Handler struct {
 	Service *facade.Service
 }
 
-func (h *Handler) InitializeRoutes(opts ...options) {
+func (h *Handler) InitializeRoutes(ctx context.Context) http.Handler {
 	r := mux.NewRouter()
 
 	// Health check
-	r.Handle(http.MethodGet, "/health", h.HealthCheck())
+	r.Handle("/health", h.HealthCheck()).Methods(http.MethodGet)
 	// Get forecast handler
-	r.Handle(http.MethodGet, "/forecast", h.GetForecast())
+	r.Handle("/forecast", h.GetForecast(ctx)).Methods(http.MethodGet)
+
+	return r
 }
 
-func (h *Handler) GetForecast() http.HandlerFunc {
+func (h *Handler) GetForecast(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sw := time.Now()
-		statusCode := http.StatusOK
 
-		var apiRequest models.Request
-		var apiResponse models.WeatherPropertiesResponse
+		var statusCode int
+		var apiError error
+		apiRequest := queryParams(r)
+		var apiResponse models.Response
 
-		apiResponse = h.Service.GetWeatherData(ctx, *apiRequest.FromJSON(ctx.Request.Body))
+		res, apiError := h.Service.GetWeatherData(ctx, apiRequest)
+		if apiError != nil {
+			log.Println(apiError)
+		}
 
 		if len(apiResponse.Message.ErrorLog) > 0 {
-			statusCode = apiResponse.Message.ErrorLog.GetHTTPStatus(len(apiResponse.Stuff))
+			statusCode = apiResponse.Message.ErrorLog.GetHTTPStatus(len(apiResponse.WeatherPropertiesRes.Periods))
 		}
 		apiResponse.Message.AddMessageDetails(sw)
-
-		ctx.JSON(statusCode, apiResponse)
+		apiResponse.WeatherPropertiesRes = res
+		w.WriteHeader(statusCode)
 	}
 }
 
@@ -49,4 +57,15 @@ func (h *Handler) HealthCheck() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func queryParams(r *http.Request) models.Request {
+	latitude := r.URL.Query()["latitude"]
+	longitude := r.URL.Query()["longitude"]
+
+	return models.Request{
+		Latitude:  latitude[0],
+		Longitude: longitude[0],
+	}
+
 }
