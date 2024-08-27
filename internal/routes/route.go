@@ -39,7 +39,7 @@ func (h *Handler) GetForecast(ctx context.Context) http.HandlerFunc {
 
 		//set the api error here
 		if len(apiResponse.Message.ErrorLog) > 0 {
-			statusCode = apiResponse.Message.ErrorLog.GetHTTPStatus(len(apiResponse.WeatherPropertiesRes.Periods))
+			statusCode = apiResponse.Message.ErrorLog.GetHTTPStatus(len(apiResponse.WeatherResponse))
 		}
 
 		w.Header().Set("Content-Type", "application/json")

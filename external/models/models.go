@@ -14,12 +14,8 @@ type Request struct {
 }
 
 type Response struct {
-	WeatherResponse WeatherPropertiesRes `json:"weather_properties_res,omitemptys"`
-	Message         Message              `json:"message"`
-}
-
-type WeatherPropertiesRes struct {
-	Periods []Periods `json:"periods,omitempty"`
+	WeatherResponse []Periods `json:"weatherResponse,omitemptys"`
+	Message         Message   `json:"message"`
 }
 
 type Periods struct {

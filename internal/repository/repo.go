@@ -13,7 +13,8 @@ import (
 )
 
 type RepositoryI interface {
-	SearchWeatherApi(ctx context.Context, request models.Request) (response models.WeatherPropertiesRes, err error)
+	SearchWeatherApi(ctx context.Context, request models.Request) (WeatherResponse, error)
+	GetGridInfo(ctx context.Context, request models.Request) (string, error)
 }
 
 // Repository struct that uses the ServiceConfig and implements RepositoryI
@@ -21,38 +22,73 @@ type Repository struct {
 	Config *config.ServiceConfig
 }
 
-// Service to call national weather service
-func (r *Repository) SearchWeatherApi(ctx context.Context, request models.Request) (models.WeatherPropertiesRes, error) {
-	// Build the API URL using the ServiceConfig
-	apiURL := fmt.Sprintf("%s/%s,%s", r.Config.URL, request.Latitude, request.Longitude)
+func (r *Repository) GetGridInfo(ctx context.Context, request models.Request) (string, error) {
+	apiURL := fmt.Sprintf("%s/points/%s,%s", r.Config.URL, request.Latitude, request.Longitude)
+
 	// Set the timeout based on the configuration
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(r.Config.Timeout)*time.Second)
-	defer cancel() // Ensure the context is canceled after the request is done
-	// Make the HTTP request
+	defer cancel()
+
 	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
-		return models.WeatherPropertiesRes{}, err
+		return "", err
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Errorf("failed to call the upstream service %v", err)
-		return models.WeatherPropertiesRes{}, err
+		log.Errorf("failed to call the upstream service: %v", err)
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	// Read and parse the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("failed to read response body %v", err)
-		return models.WeatherPropertiesRes{}, err
+		log.Errorf("failed to read response body: %v", err)
+		return "", err
 	}
 
-	var weatherRes models.WeatherPropertiesRes
+	var pointsRes PointsResponse
+	if err := json.Unmarshal(body, &pointsRes); err != nil {
+		log.Errorf("failed to unmarshal points response: %v", err)
+		return "", err
+	}
+
+	return pointsRes.Properties.Forecast, nil
+}
+
+func (r *Repository) SearchWeatherApi(ctx context.Context, request models.Request) (WeatherResponse, error) {
+
+	forecastURL, err := r.GetGridInfo(ctx, request)
+	if err != nil {
+		log.Error("failed to get grid info", err)
+		return WeatherResponse{}, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", forecastURL, nil)
+	if err != nil {
+		return WeatherResponse{}, err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Errorf("failed to call the forecast service: %v", err)
+		return WeatherResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("failed to read forecast response body: %v", err)
+		return WeatherResponse{}, err
+	}
+
+	// Unmarshal the weather data into WeatherResponse
+	var weatherRes WeatherResponse
 	if err := json.Unmarshal(body, &weatherRes); err != nil {
-		log.Errorf("failed to unmarshal response body %v", err)
-		return models.WeatherPropertiesRes{}, err
+		log.Errorf("failed to unmarshal forecast response: %v", err)
+		return WeatherResponse{}, err
 	}
 
 	return weatherRes, nil

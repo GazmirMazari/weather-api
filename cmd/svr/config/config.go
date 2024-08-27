@@ -44,8 +44,6 @@ func (s *ServiceConfig) InitHTTPClient() {
 	}
 }
 
-type ServiceConfigMap map[string]*ServiceConfig
-
 // Load initializes and returns a configuration object.
 func New(configPath string) (*Config, error) {
 	log.Tracef("Loading config from: %s\n", configPath)

@@ -30,7 +30,7 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 				ErrorLog: models.ErrorLogs{
 					{
 						Scope:      "Bad Request",
-						StatusCode: "400", // Use 400 for Bad Request
+						StatusCode: "400",
 						RootCause:  err.Error(),
 					},
 				},
@@ -39,7 +39,7 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 	}
 
 	// Call the repository method to fetch weather data
-	apiData, err := r.RepositoryService.SearchWeatherApi(ctx, request)
+	weatherInfo, err := r.RepositoryService.SearchWeatherApi(ctx, request)
 	if err != nil {
 		// Log the error
 		log.Errorf("GetWeatherApiData error: %v", err)
@@ -59,7 +59,7 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 	}
 
 	// Perform mapping if necessary
-	res = r.Mapper.MapWeatherData(apiData)
+	res = r.Mapper.MapWeatherData(weatherInfo)
 
 	return res
 }
