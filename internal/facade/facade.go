@@ -65,28 +65,26 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 }
 
 func validateRequest(request models.Request) error {
-	// Check if latitude or longitude is empty
-	if request.Latitude == "" || request.Longitude == "" {
-		return errors.New("invalid request: latitude and longitude should not be empty")
+
+	// Parse latitude and longitude as float32
+	latitude, err := strconv.ParseFloat(request.Latitude, 64)
+	if err != nil {
+		log.Printf("Invalid latitude: %v", err)
+		return errors.New("invalid latitude")
 	}
 
-	// Convert latitude and longitude from strings to float64
-	lat, err := strconv.ParseFloat(request.Latitude, 64)
+	longitude, err := strconv.ParseFloat(request.Longitude, 64)
 	if err != nil {
-		return errors.New("invalid latitude: must be a valid number")
-	}
-
-	lon, err := strconv.ParseFloat(request.Longitude, 64)
-	if err != nil {
-		return errors.New("invalid longitude: must be a valid number")
+		log.Printf("Invalid longitude: %v", err)
+		return errors.New("invalid longitude")
 	}
 
 	// Validate latitude and longitude ranges
-	if lat < -90.0 || lat > 90.0 {
+	if latitude < -90.0 || latitude > 90.0 {
 		return errors.New("invalid latitude: must be between -90.0 and 90.0")
 	}
 
-	if lon < -180.0 || lon > 180.0 {
+	if longitude < -180.0 || longitude > 180.0 {
 		return errors.New("invalid longitude: must be between -180.0 and 180.0")
 	}
 

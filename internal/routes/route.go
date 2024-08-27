@@ -67,9 +67,10 @@ func (h *Handler) HealthCheck() http.HandlerFunc {
 func queryParams(r *http.Request) models.Request {
 	latitude := r.URL.Query().Get("latitude")
 
-	longitude := r.Header.Get("longitude")
+	longitude := r.URL.Query().Get("longitude")
 
 	return models.Request{
+		// Return the request model with parsed values
 		Latitude:  latitude,
 		Longitude: longitude,
 	}
