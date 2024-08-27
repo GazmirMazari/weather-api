@@ -3,13 +3,13 @@ package mapper
 import "weatherapi/v2/external/models"
 
 type MapperI interface {
-	MapWeatherApiResponse(res models.WeatherPropertiesRes) (response models.WeatherPropertiesRes, err error)
+	MapWeatherData(res models.WeatherPropertiesRes) (response models.Response)
 }
 
 type Mapper struct {
 }
 
-func (m *Mapper) MapWeatherApiResponse(res models.WeatherPropertiesRes) (response models.WeatherPropertiesRes, err error) {
+func (m *Mapper) MapWeatherData(res models.WeatherPropertiesRes) (response models.Response) {
 	//TODO implement me
 	panic("implement me")
 }

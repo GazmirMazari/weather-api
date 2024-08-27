@@ -11,7 +11,7 @@ import (
 )
 
 type ServiceI interface {
-	GetWeatherData(ctx context.Context, request models.Request) (response models.WeatherPropertiesRes, err error)
+	GetWeatherData(ctx context.Context, request models.Request) (res models.Response)
 }
 
 type Service struct {
@@ -19,25 +19,49 @@ type Service struct {
 	Mapper            mapper.MapperI
 }
 
-func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (res models.WeatherPropertiesRes, err error) {
+func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (res models.Response) {
 	// Validate request
 	if err := validateRequest(request); err != nil {
 		log.Errorf("validate request error: %v", err)
-		return res, err
+
+		// Return the response with the error log
+		return models.Response{
+			Message: models.Message{
+				ErrorLog: models.ErrorLogs{
+					{
+						Scope:      "Bad Request",
+						StatusCode: "400", // Use 400 for Bad Request
+						RootCause:  err.Error(),
+					},
+				},
+			},
+		}
 	}
 
 	// Call the repository method to fetch weather data
-	response, err := r.RepositoryService.SearchWeatherApi(ctx, request)
+	apiData, err := r.RepositoryService.SearchWeatherApi(ctx, request)
 	if err != nil {
-
+		// Log the error
 		log.Errorf("GetWeatherApiData error: %v", err)
-		return res, err
+
+		// Return the response with the error log
+		return models.Response{
+			Message: models.Message{
+				ErrorLog: models.ErrorLogs{
+					{
+						Scope:      "Internal Server Error",
+						StatusCode: "500",
+						RootCause:  err.Error(),
+					},
+				},
+			},
+		}
 	}
 
 	// Perform mapping if necessary
-	// response = r.Mapper.MapWeatherData(response)
+	res = r.Mapper.MapWeatherData(apiData)
 
-	return response, err
+	return res
 }
 
 func validateRequest(request models.Request) error {

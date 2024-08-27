@@ -30,22 +30,27 @@ func (h *Handler) GetForecast(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sw := time.Now()
 
-		var statusCode int
-		var apiError error
+		statusCode := http.StatusOK
+
 		apiRequest := queryParams(r)
 		var apiResponse models.Response
 
-		res, apiError := h.Service.GetWeatherData(ctx, apiRequest)
-		if apiError != nil {
-			log.Println(apiError)
-		}
+		apiResponse = h.Service.GetWeatherData(ctx, apiRequest)
 
+		//set the api error here
 		if len(apiResponse.Message.ErrorLog) > 0 {
 			statusCode = apiResponse.Message.ErrorLog.GetHTTPStatus(len(apiResponse.WeatherPropertiesRes.Periods))
 		}
+
+		w.Header().Set("Content-Type", "application/json")
 		apiResponse.Message.AddMessageDetails(sw)
-		apiResponse.WeatherPropertiesRes = res
 		w.WriteHeader(statusCode)
+
+		//Encode the response as json and writes to the response writer
+		if err := json.NewEncoder(w).Encode(apiResponse); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -60,12 +65,13 @@ func (h *Handler) HealthCheck() http.HandlerFunc {
 }
 
 func queryParams(r *http.Request) models.Request {
-	latitude := r.URL.Query()["latitude"]
-	longitude := r.URL.Query()["longitude"]
+	latitude := r.URL.Query().Get("latitude")
+
+	longitude := r.Header.Get("longitude")
 
 	return models.Request{
-		Latitude:  latitude[0],
-		Longitude: longitude[0],
+		Latitude:  latitude,
+		Longitude: longitude,
 	}
 
 }

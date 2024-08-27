@@ -10,3 +10,6 @@ ServiceConfigs:
   - Name: "WeatherService"
     URL: "https://api.weather.gov/points"
     Timeout: 60
+  - Name: "GridForecastService"
+    URL: "https://api.weather.gov/gridpoints/ICT"
+    Timeout: 60
