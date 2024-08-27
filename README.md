@@ -25,20 +25,17 @@ This is a weather api in relation to coding exercise
 
 
 3. **Cd to cmd/svr**:
-    1. **Clone the repository**:
    ```bash
    cd cmd/svr
    ```
 
-4. **Cd to cmd/svr**:
-    1. **Clone the repository**:
+4. **Build the service**:
    ```bash
    go build .
    ```
 
 
-5. **Cd to cmd/svr**:
-    1. **Clone the repository**:
+5. **Run the service**:
    ```bash
    go run .
    ```
