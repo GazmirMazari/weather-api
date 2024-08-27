@@ -70,7 +70,6 @@ func queryParams(r *http.Request) models.Request {
 	longitude := r.URL.Query().Get("longitude")
 
 	return models.Request{
-		// Return the request model with parsed values
 		Latitude:  latitude,
 		Longitude: longitude,
 	}

@@ -21,7 +21,8 @@ type Response struct {
 type Periods struct {
 	Name          string `json:"name,omitempty"`
 	Temperature   int    `json:"temperature,omitempty"`
-	ShortForecast string `json:"shortForecast,omitempty."`
+	ShortForecast string `json:"shortForecast,omitempty"`
+	Description   string `json:"description, omitempty"`
 }
 
 type Message struct {

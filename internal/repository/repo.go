@@ -25,7 +25,6 @@ type Repository struct {
 func (r *Repository) GetGridInfo(ctx context.Context, request models.Request) (string, error) {
 	apiURL := fmt.Sprintf("%s/points/%s,%s", r.Config.URL, request.Latitude, request.Longitude)
 
-	// Set the timeout based on the configuration
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(r.Config.Timeout)*time.Second)
 	defer cancel()
 

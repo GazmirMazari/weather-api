@@ -21,6 +21,7 @@ func (m *Mapper) MapWeatherData(res repository.WeatherResponse) (response models
 				Name:          period.Name,
 				Temperature:   period.Temperature,
 				ShortForecast: period.ShortForecast,
+				Description:   classifyTemperature(period.Temperature),
 			}
 			response.WeatherResponse = append(response.WeatherResponse, weatherInfo)
 			break
@@ -29,4 +30,15 @@ func (m *Mapper) MapWeatherData(res repository.WeatherResponse) (response models
 
 	// Return the mapped response
 	return response
+}
+
+func classifyTemperature(temperature int) string {
+	switch {
+	case temperature >= 85:
+		return "Hot"
+	case temperature <= 60:
+		return "Cold"
+	default:
+		return "Moderate"
+	}
 }
