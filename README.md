@@ -1,25 +1,48 @@
 # weather-api
 This is a weather api in relation to coding exercise
 
+## Project Submission - Weather Service Assignment
 
-Project Submission - Weather Service Assignment
+### Shortcomings
 
-Write an HTTP server that serves the current weather. Your server should expose an endpoint that:
+- Unit Testing: Currently, the project needs more unit tests, especially utilizing the go mock package. The goal is to achieve at least 80% test coverage.
+- Dockerization: A Docker file should be added to allow easy deployment and containerization of the service.
+- Automation: A Makefile is necessary to simplify the build and test process, making it easier to run, build, and test the application with a single command.
+- Integrate swagger
 
-1.    Accepts latitude and longitude coordinates
+## Steps to set up the service
 
-2.    Returns the short forecast for that area for Today (“Partly Cloudy” etc)
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-repo/weather-api.git
+   ```
 
-3.    Returns a characterization of whether the temperature is “hot”, “cold”, or “moderate” (use your discretion on mapping temperatures to each type)
+2. **Install dependencies**:
+    1. **Clone the repository**:
+   ```bash
+   go mod tidy
+   ```
 
-4.    Use the National Weather Service API Web Service as a data source.
 
-The purpose of this exercise is to provide a sample of your work that we can discuss together in the Technical Interview.
+3. **Cd to cmd/svr**:
+    1. **Clone the repository**:
+   ```bash
+   cd cmd/svr
+   ```
 
-·  We respect your time. Spend as long as you need, but we intend it to take around an hour.
+4. **Cd to cmd/svr**:
+    1. **Clone the repository**:
+   ```bash
+   go build .
+   ```
 
-·  We do not expect a production-ready service, but you might want to comment on your shortcuts.
 
-·  The submitted project should build and have brief instructions so we can verify that it works.
+5. **Cd to cmd/svr**:
+    1. **Clone the repository**:
+   ```bash
+   go run .
+   ```
 
-·  You may write in whatever language or stack you're most comfortable in, but the technical interviewers are most familiar with Typelevel Scala.
+
+
+
