@@ -3,11 +3,12 @@ package facade
 import (
 	"context"
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"weatherapi/v2/external/models"
 	"weatherapi/v2/internal/mapper"
 	"weatherapi/v2/internal/repository"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ServiceI interface {
@@ -66,7 +67,7 @@ func (r *Service) GetWeatherData(ctx context.Context, request models.Request) (r
 
 func validateRequest(request models.Request) error {
 
-	// Parse latitude and longitude as float32
+	// Parse latitude and longitude as float64
 	latitude, err := strconv.ParseFloat(request.Latitude, 64)
 	if err != nil {
 		log.Printf("Invalid latitude: %v", err)
