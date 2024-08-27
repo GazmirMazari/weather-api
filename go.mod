@@ -1,6 +1,6 @@
 module weatherapi/v2
 
-go 1.22.1
+go 1.22
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1

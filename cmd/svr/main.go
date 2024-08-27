@@ -11,7 +11,7 @@ import (
 )
 
 const port = ":8080"
-const configPath = "config/config.yaml"
+const configPath = "config.yaml"
 
 func main() {
 	defer recoverPanics()
@@ -34,7 +34,7 @@ func main() {
 
 	router := handler.InitializeRoutes(ctx)
 
-	log.Printf("Server is listening on http://localhost%s", port)
+	log.Printf("APIServer is listening on %s", port)
 	log.Fatal(http.ListenAndServe(port, gziphandler.GzipHandler(router)))
 
 }

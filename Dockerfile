@@ -1,34 +1,20 @@
-# STEP 1: Build Phase
-# Use an official Golang image as the builder
-FROM golang:1.18-alpine AS builder
+FROM golang:1.19.2-alpine as builder
 
-# Set the working directory inside the container
+COPY . /app
 WORKDIR /app
 
-# Copy go.mod and go.sum files
-COPY go.mod go.sum ./
+RUN go get ./...
+RUN cat /etc/resolv.conf
 
-# Download all dependencies (cached if go.mod and go.sum have not changed)
-RUN go mod download
+WORKDIR /app/cmd/svr
 
-# Copy the rest of the application code
-COPY . .
+RUN go build -o app
 
-# Build the Go app (replace "main.go" with your main Go file if it's different)
-RUN go build -o main .
+FROM alpine:3.18
 
-# STEP 2: Runtime Phase
-# Use a minimal image for running the binary (Alpine in this case)
-FROM alpine:latest
-
-# Set the working directory inside the runtime container
-WORKDIR /app
-
-# Copy the binary from the build phase
-COPY --from=builder /app/main .
-
-# Expose the port on which the application will listen (e.g., 8080)
 EXPOSE 8080
+COPY --from=builder /app/cmd/svr/app .
+COPY --from=builder /app/cmd/svr/config.yaml .
 
-# Command to run the application
-CMD ["./main"]
+
+CMD ["./app"]

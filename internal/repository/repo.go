@@ -18,10 +18,10 @@ type RepositoryI interface {
 
 // Repository struct that uses the ServiceConfig and implements RepositoryI
 type Repository struct {
-	Config *config.ServiceConfig // Injected ServiceConfig
+	Config *config.ServiceConfig
 }
 
-// Ensure Repository implements RepositoryI
+// Service to call national weather service
 func (r *Repository) SearchWeatherApi(ctx context.Context, request models.Request) (models.WeatherPropertiesRes, error) {
 	// Build the API URL using the ServiceConfig
 	apiURL := fmt.Sprintf("%s/%s,%s", r.Config.URL, request.Latitude, request.Longitude)
